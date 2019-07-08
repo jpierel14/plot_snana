@@ -170,11 +170,10 @@ def plot_lc(cid,base_name):
 	
 	j=0
 	for nfig in range(int(math.ceil(rows/4.))): 
-		fig,ax=plt.subplots(nrows=min(rows,4),ncols=1,figsize=(8,8),sharex=True)
+		fig,ax=plt.subplots(nrows=min(len(all_bands[j:]),4),ncols=1,figsize=(8,8),sharex=True)
 		ax[0].set_title('SN%s'%cid[0],fontsize=16)
 		
 		for i in range(min(len(all_bands[j:]),4)):
-
 			temp_sn={k:sn[k][np.where(sn['filter']==all_bands[j])[0]] for k in sn.keys()}
 			chi2=np.mean(temp_sn['chi2'])
 			if chi2>0:
