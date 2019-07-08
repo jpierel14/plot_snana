@@ -262,7 +262,7 @@ def main():
 	if not options.noclean:
 		for x in glob.glob(options.base_name+'*'):
 			os.remove(x)
-	if not option.silent:
+	if not options.silent:
 		print('Done.')
 
 if __name__=='__main__':
