@@ -1,0 +1,19 @@
+# For the non-interactive plotter, there are two required flags:
+
+      -i #The CID (or comma separated CIDs) you want to plot
+      -v #The version of your sim
+
+#Then there are some optional flags:
+      
+      -b #The bin size for spectra plotting, default is to plot the raw data
+      --lc #Just plot the light curve, ignore spectrum
+      --spec #Just plot the spectrum, ignore light curve
+
+#Overall, your command should look something like this at minimum:
+	  
+	  python plot_snana_sim.py -i CID -g MY_GENVERSION
+
+
+#Example:
+
+	 python plot_snana_sim.py -i 2001en,2002de -v DES-SN3YR_LOWZ
