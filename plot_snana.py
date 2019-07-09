@@ -240,7 +240,7 @@ def main():
 		filename=os.path.splitext(filename)[0]+'_'+str(num)+'.pdf'
 	while os.path.exists(filename):
 		num+=1
-		filename=os.path.splitext(filename)[0][:-5]+str(num)+'.pdf'
+		filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
 	with PdfPages(filename) as pdf:
 		for cid in options.CID:
 			if not options.silent:
