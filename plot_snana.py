@@ -236,9 +236,11 @@ def main():
 	options.CID=options.CID.split(',')
 	filename=options.version+'.pdf'
 	num=0
-	while os.path.exists(filename):
+	if os.path.exists(filename):
 		filename=os.path.splitext(filename)[0]+'_'+str(num)+'.pdf'
+	while os.path.exists(filename):
 		num+=1
+		filename=os.path.splitext(filename)[0][:-5]+str(num)+'.pdf'
 	with PdfPages(filename) as pdf:
 		for cid in options.CID:
 			if not options.silent:
