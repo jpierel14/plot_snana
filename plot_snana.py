@@ -91,7 +91,7 @@ def plot_spec(cid,bin_size,base_name):
 		for nfig in range(int(math.ceil(len(np.unique(sn['tobs']))/4.))):
 			fig,ax=plt.subplots(nrows=min(len(np.unique(sn['tobs'])),4),ncols=1,figsize=(8,8),sharex=True)
 			ax[0].set_title('SN%s'%cid[0],fontsize=16)
-			for j in range(min(len(np.unique(sn['tobs']))[m:],4)):
+			for j in range(min(len(np.unique(sn['tobs'])[m:]),4)):
 				
 				temp_sn=np.where(sn['tobs']==np.unique(sn['tobs'])[m])[0]
 				if bin_size!=0:
