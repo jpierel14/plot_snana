@@ -47,7 +47,7 @@ def read_spec(cid,base_name):
 			 str(temp[varnames.index('CID')].decode('utf-8'))in cid:
 			if temp_id is None:
 				temp_id=int(temp[varnames.index('ID')])
-			if temp_id!=int(temp[varnames.index('ID')])	
+			if temp_id!=int(temp[varnames.index('ID')]):	
 				mjd_ind+=1
 			temp_id=int(temp[varnames.index('ID')])
 			sn['wave'].append((float(temp[varnames.index('LAMMAX')])+float(temp[varnames.index('LAMMIN')]))/2.)
