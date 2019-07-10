@@ -44,6 +44,7 @@ def read_spec(cid,base_name):
 			sn['flux'].append(float(temp[varnames.index('FLAM')]))
 			sn['fluxerr'].append(float(temp[varnames.index('FLAMERR')]))
 			sn['tobs'].append(id_to_obs[int(temp[varnames.index('ID')])])
+			sn['mjd'].append(id_to_obs[int(temp[varnames.index('MJD')])])
 	sn={k:np.array(sn[k]) for k in sn.keys()}
 	return(sn)
 def read_lc(cid,base_name):
@@ -82,7 +83,7 @@ def read_lc(cid,base_name):
 
 def plot_spec(cid,bin_size,base_name):
 	sn=read_spec(cid,base_name)
-	print(np.unique(sn['tobs']))
+
 	if len(sn['tobs'])==0:
 		return []
 	if len(np.unique(sn['tobs']))>1:
@@ -111,13 +112,18 @@ def plot_spec(cid,bin_size,base_name):
 					binned_fluxerr=sn['fluxerr'][temp_sn]
 					#sn=(sn.group_by(np.trunc(sn['wave']/bin_size))).groups.aggregate(np.mean)
 				
-				ax[j].plot(binned_wave,binned_flux,color='k',label='TOBS:%.2f'%np.unique(sn['tobs'])[j])
+				if np.unique(sn['mjd'])[j]<0:
+					spec_label='HOST'
+				else:
+					spec_label='SN:%.2f'%np.unique(sn['tobs'])[j]
+				ax[j].plot(binned_wave,binned_flux,color='k',label=spec_label)
 				ylim=ax[j].get_ylim()
 				ax[j].fill_between(binned_wave,binned_flux-binned_fluxerr,binned_flux+binned_fluxerr,
 							 color='r',alpha=.3,label=r'$1\sigma$ Error')
 				ax[j].plot([binned_wave[0],binned_wave[-1]],[0,0],'k--',alpha=.5)
 				ax[j].set_ylim(ylim)
-				ax[j].legend(fontsize=16)
+				ax[j].legend(fontsize=14)
+
 			
 				ax[j].set_ylabel('Flux',fontsize=16)
 				m+=1
@@ -150,7 +156,7 @@ def plot_spec(cid,bin_size,base_name):
 						 color='r',alpha=.3,label=r'$1\sigma$ Error')
 		plt.plot([binned_wave[0],binned_wave[-1]],[0,0],'k--',alpha=.5)
 		plt.ylim(ylim)
-		plt.legend(fontsize=16)
+		plt.legend(fontsize=14)
 		plt.xlabel('Observer Frame Wavelength ($\AA$)',fontsize=16)
 		plt.ylabel('Flux',fontsize=16)
 		plt.title('SN%s'%cid[0],fontsize=16)
@@ -181,7 +187,7 @@ def plot_lc(cid,base_name):
 				leg_size=12
 			else:
 				lab=all_bands[j]
-				leg_size=16
+				leg_size=14
 			j+=1
 			ax[i].errorbar(temp_sn['time'],temp_sn['flux'],yerr=temp_sn['fluxerr'],
 						  fmt='.',markersize=8,color='k',
