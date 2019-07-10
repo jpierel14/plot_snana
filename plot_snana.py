@@ -30,7 +30,7 @@ def read_spec(cid,base_name):
 		else:
 			id_to_obs[int(temp[varnames.index('ID')])]=float(temp[varnames.index('TOBS')])
 			mjds.append(float(temp[varnames.index('MJD')]))
-	print(mjds)
+
 	sn={k:[] for k in names}
 
 	with open(base_name+".SPECPLOT.TEXT",'rb') as f:
@@ -46,10 +46,10 @@ def read_spec(cid,base_name):
 		elif len(temp)>0 and b'OBS:' in temp and\
 			 str(temp[varnames.index('CID')].decode('utf-8'))in cid:
 			if temp_id is None:
-				temp_id=id_to_obs[int(temp[varnames.index('ID')])]
-			elif temp_id!=id_to_obs[int(temp[varnames.index('ID')])]:
-				print(temp_id,id_to_obs[int(temp[varnames.index('ID')])])
+				temp_id=int(temp[varnames.index('ID')])
+			if temp_id!=int(temp[varnames.index('ID')])	
 				mjd_ind+=1
+			temp_id=int(temp[varnames.index('ID')])
 			sn['wave'].append((float(temp[varnames.index('LAMMAX')])+float(temp[varnames.index('LAMMIN')]))/2.)
 			sn['flux'].append(float(temp[varnames.index('FLAM')]))
 			sn['fluxerr'].append(float(temp[varnames.index('FLAMERR')]))
