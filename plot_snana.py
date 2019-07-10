@@ -18,7 +18,7 @@ __band_order__=np.append(['u','b','g','r','i','z','y','j','h','k'],
 	 [x.upper() for x in ['u','b','g','r','i','z','y','j','h','k']])
 
 def read_spec(cid,base_name):
-	names=['wave','flux','fluxerr','tobs']
+	names=['wave','flux','fluxerr','tobs','mjd']
 	id_to_obs=dict([])
 	with open(base_name+".SPECLIST.TEXT",'rb') as f:
 		dat=f.readlines()
