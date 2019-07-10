@@ -241,6 +241,7 @@ def plot_cmd(genversion,cid_list):
 	return(plotter,'OUT_TEMP_'+rand)
 
 def main():
+
 	parser = OptionParser()
 	parser.add_option("--spec",help='Plot only spectra',action="store_true",dest="spec",default=False)
 	parser.add_option("--lc",help='Plot only LC',action="store_true",dest="lc",default=False)
@@ -252,7 +253,8 @@ def main():
 	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
 	(options,args)=parser.parse_args()
-	print(args)
+	if len(sys.argv)==0:
+		print(options.help)
 	if options.CID=="None":
 		raise RuntimeError("Need to define CID")
 	if options.version is None:
