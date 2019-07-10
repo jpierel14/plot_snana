@@ -27,7 +27,7 @@ def read_spec(cid,base_name):
 		if len(temp)>0 and b'VARNAMES:' in temp:
 			varnames=[str(x.decode('utf-8')) for x in temp]
 		else:
-			id_to_obs[int(temp[varnames.index('CID')])]=float(temp[varnames.index('TOBS')])
+			id_to_obs[int(temp[varnames.index('ID')])]=float(temp[varnames.index('TOBS')])
 	sn={k:[] for k in names}
 
 	with open(base_name+".SPECPLOT.TEXT",'rb') as f:
@@ -43,7 +43,7 @@ def read_spec(cid,base_name):
 			sn['wave'].append((float(temp[varnames.index('LAMMAX')])+float(temp[varnames.index('LAMMIN')]))/2.)
 			sn['flux'].append(float(temp[varnames.index('FLAM')]))
 			sn['fluxerr'].append(float(temp[varnames.index('FLAMERR')]))
-			sn['tobs'].append(id_to_obs[int(temp[varnames.index('CID')])])
+			sn['tobs'].append(id_to_obs[int(temp[varnames.index('ID')])])
 	sn={k:np.array(sn[k]) for k in sn.keys()}
 	return(sn)
 def read_lc(cid,base_name):
