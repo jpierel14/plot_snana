@@ -82,7 +82,7 @@ def read_lc(cid,base_name):
 
 def plot_spec(cid,bin_size,base_name):
 	sn=read_spec(cid,base_name)
-	
+	print(np.unique(sn['tobs']))
 	if len(sn['tobs'])==0:
 		return []
 	if len(np.unique(sn['tobs']))>1:
