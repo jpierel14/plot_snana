@@ -20,6 +20,7 @@ __band_order__=np.append(['u','b','g','r','i','z','y','j','h','k'],
 def read_spec(cid,base_name):
 	names=['wave','flux','fluxerr','tobs','mjd']
 	id_to_obs=dict([])
+	mjds=[]
 	with open(base_name+".SPECLIST.TEXT",'rb') as f:
 		dat=f.readlines()
 	for line in dat:
@@ -28,10 +29,13 @@ def read_spec(cid,base_name):
 			varnames=[str(x.decode('utf-8')) for x in temp]
 		else:
 			id_to_obs[int(temp[varnames.index('ID')])]=float(temp[varnames.index('TOBS')])
+			mjds.append(float(temp[varnames.index('MJD')]))
 	sn={k:[] for k in names}
 
 	with open(base_name+".SPECPLOT.TEXT",'rb') as f:
 		dat=f.readlines()
+	temp_id=None
+	mjd_ind=0
 	for line in dat:
 		temp=line.split()
 		
@@ -40,11 +44,15 @@ def read_spec(cid,base_name):
 			varnames=[str(x.decode('utf-8')) for x in temp]
 		elif len(temp)>0 and b'OBS:' in temp and\
 			 str(temp[varnames.index('CID')].decode('utf-8'))in cid:
+			if temp_id is None:
+				temp_id=id_to_obs[int(temp[varnames.index('ID')])]
+			elif temp_id!=id_to_obs[int(temp[varnames.index('ID')])]:
+				mjd_ind+=1
 			sn['wave'].append((float(temp[varnames.index('LAMMAX')])+float(temp[varnames.index('LAMMIN')]))/2.)
 			sn['flux'].append(float(temp[varnames.index('FLAM')]))
 			sn['fluxerr'].append(float(temp[varnames.index('FLAMERR')]))
 			sn['tobs'].append(id_to_obs[int(temp[varnames.index('ID')])])
-			sn['mjd'].append(id_to_obs[int(temp[varnames.index('MJD')])])
+			sn['mjd'].append(mjds[mjd_ind])
 	sn={k:np.array(sn[k]) for k in sn.keys()}
 	return(sn)
 def read_lc(cid,base_name):
