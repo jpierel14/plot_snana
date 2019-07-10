@@ -136,10 +136,11 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 
 			
 				ax[j].set_ylabel('Flux',fontsize=16)
+				if not noGrid:
+					plt.grid()
 				m+=1
 			ax[j].set_xlabel('Observer Frame Wavelength ($\AA$)',fontsize=16)
-			if not noGrid:
-				plt.grid()
+			
 			figs.append(fig)
 			plt.close()
 	else:
@@ -172,6 +173,8 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 		plt.xlabel('Observer Frame Wavelength ($\AA$)',fontsize=16)
 		plt.ylabel('Flux',fontsize=16)
 		plt.title('SN%s'%cid[0],fontsize=16)
+		if not noGrid:
+			plt.grid()
 		figs=[fig]
 		plt.close()
 	#plt.savefig('SNANA_SPEC_%s.pdf'%'_'.join(cid),format='pdf',overwrite=True)
@@ -209,10 +212,11 @@ def plot_lc(cid,base_name,noGrid):
 				ax[i].plot(fit_time,fits[band](fit_time),color='r',label='Best Fit',linewidth=3)
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
+			if not noGrid:
+				plt.grid()
 			#i+=1
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
-		if not noGrid:
-			plt.grid()
+		
 		figs.append(fig)
 		plt.close()
 	#fig.text(0.5, 0.02, 'Time (Rest Frame Days)', ha='center',fontsize=16)
