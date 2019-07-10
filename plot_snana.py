@@ -254,7 +254,7 @@ def main():
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
 	(options,args)=parser.parse_args()
 	print(len(sys.argv))
-	if len(sys.argv)==0:
+	if len(sys.argv)==1:
 		parser.print_help(sys.stderr)
 		sys.exit()
 	if options.CID=="None":
