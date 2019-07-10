@@ -91,7 +91,7 @@ def read_lc(cid,base_name):
 		fits=[]
 	return(sn,fits,peak)
 
-def plot_spec(cid,bin_size,base_name):
+def plot_spec(cid,bin_size,base_name,noGrid):
 	sn=read_spec(cid,base_name)
 
 	if len(sn['tobs'])==0:
@@ -138,6 +138,8 @@ def plot_spec(cid,bin_size,base_name):
 				ax[j].set_ylabel('Flux',fontsize=16)
 				m+=1
 			ax[j].set_xlabel('Observer Frame Wavelength ($\AA$)',fontsize=16)
+			if not noGrid:
+				plt.grid()
 			figs.append(fig)
 			plt.close()
 	else:
@@ -175,7 +177,7 @@ def plot_spec(cid,bin_size,base_name):
 	#plt.savefig('SNANA_SPEC_%s.pdf'%'_'.join(cid),format='pdf',overwrite=True)
 	return(figs)
 
-def plot_lc(cid,base_name):
+def plot_lc(cid,base_name,noGrid):
 	sn,fits,peak=read_lc(cid,base_name)
 	if len(sn['time'])==0:
 		return []
@@ -209,6 +211,8 @@ def plot_lc(cid,base_name):
 			ax[i].set_ylabel('Flux',fontsize=16)
 			#i+=1
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
+		if not noGrid:
+			plt.grid()
 		figs.append(fig)
 		plt.close()
 	#fig.text(0.5, 0.02, 'Time (Rest Frame Days)', ha='center',fontsize=16)
@@ -240,6 +244,7 @@ def main():
 	parser.add_option("-b",help='Bin size for spectral plotting',action="store",type="float",dest='bin_size',default=0)
 	parser.add_option("-v",help='Version',action="store",type='string',dest='version',default=None)
 	parser.add_option("--silent",help="Do not print anything",action="store_true",dest="silent",default=False)
+	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
 	(options,args)=parser.parse_args()
 	
@@ -262,18 +267,18 @@ def main():
 			if not options.silent:
 				print("Plotting SN %s"%cid)
 			if options.spec:
-				figs=plot_spec([cid],options.bin_size,options.base_name)
+				figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 				for f in figs:
 					pdf.savefig(f)
 			elif options.lc:
-				figs=plot_lc([cid],options.base_name)
+				figs=plot_lc([cid],options.base_name,options.noGrid)
 				for f in figs:
 					pdf.savefig(f)
 			else:
-				figs=plot_spec([cid],options.bin_size,options.base_name)
+				figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 				for f in figs:
 					pdf.savefig(f)
-				figs=plot_lc([cid],options.base_name)
+				figs=plot_lc([cid],options.base_name,options.noGrid)
 				for f in figs:
 					pdf.savefig(f)
 	
