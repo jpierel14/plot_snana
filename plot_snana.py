@@ -132,7 +132,7 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 							 color='r',alpha=.3,label=r'$1\sigma$ Error')
 				ax[j].plot([binned_wave[0],binned_wave[-1]],[0,0],'k--',alpha=.5)
 				ax[j].set_ylim(ylim)
-				ax[j].legend(fontsize=14)
+				ax[j].legend(fontsize=12)
 
 			
 				ax[j].set_ylabel('Flux',fontsize=16)
@@ -169,7 +169,7 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 						 color='r',alpha=.3,label=r'$1\sigma$ Error')
 		plt.plot([binned_wave[0],binned_wave[-1]],[0,0],'k--',alpha=.5)
 		plt.ylim(ylim)
-		plt.legend(fontsize=14)
+		plt.legend(fontsize=12)
 		plt.xlabel('Observer Frame Wavelength ($\AA$)',fontsize=16)
 		plt.ylabel('Flux',fontsize=16)
 		plt.title('SN%s'%cid[0],fontsize=16)
@@ -199,10 +199,10 @@ def plot_lc(cid,base_name,noGrid):
 			chi2=np.mean(temp_sn['chi2'])
 			if chi2>0:
 				lab=r'%s: $\chi^2$=%.1f'%(band,np.mean(temp_sn['chi2']))
-				leg_size=12
+				leg_size=10
 			else:
 				lab=all_bands[j]
-				leg_size=14
+				leg_size=12
 			j+=1
 			ax[i].errorbar(temp_sn['time'],temp_sn['flux'],yerr=temp_sn['fluxerr'],
 						  fmt='.',markersize=8,color='k',
@@ -212,6 +212,7 @@ def plot_lc(cid,base_name,noGrid):
 				ax[i].plot(fit_time,fits[band](fit_time),color='r',label='Best Fit',linewidth=3)
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
+			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*np.max(temp_sn['flux'])))
 			if not noGrid:
 				ax[i].grid()
 			#i+=1
