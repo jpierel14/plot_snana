@@ -137,7 +137,7 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 			
 				ax[j].set_ylabel('Flux',fontsize=16)
 				if not noGrid:
-					plt.grid()
+					ax[j].grid()
 				m+=1
 			ax[j].set_xlabel('Observer Frame Wavelength ($\AA$)',fontsize=16)
 			
@@ -213,7 +213,7 @@ def plot_lc(cid,base_name,noGrid):
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
 			if not noGrid:
-				plt.grid()
+				ax[i].grid()
 			#i+=1
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
 		
