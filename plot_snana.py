@@ -252,7 +252,7 @@ def main():
 	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
 	(options,args)=parser.parse_args()
-	
+	print(args)
 	if options.CID=="None":
 		raise RuntimeError("Need to define CID")
 	if options.version is None:
