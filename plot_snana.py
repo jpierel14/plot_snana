@@ -105,11 +105,11 @@ def plot_spec(cid,bin_size,base_name):
 						binned_wave=np.append(binned_wave,np.mean(sn['wave'][temp_sn][bins==i]))
 						binned_flux=np.append(binned_flux,np.mean(sn['flux'][temp_sn][bins==i]))
 						binned_fluxerr=np.append(binned_fluxerr,np.mean(sn['fluxerr'][temp_sn][bins==i]))
-					else:
-						binned_wave=sn['wave'][temp_sn]
-						binned_flux=sn['flux'][temp_sn]
-						binned_fluxerr=sn['fluxerr'][temp_sn]
-						#sn=(sn.group_by(np.trunc(sn['wave']/bin_size))).groups.aggregate(np.mean)
+				else:
+					binned_wave=sn['wave'][temp_sn]
+					binned_flux=sn['flux'][temp_sn]
+					binned_fluxerr=sn['fluxerr'][temp_sn]
+					#sn=(sn.group_by(np.trunc(sn['wave']/bin_size))).groups.aggregate(np.mean)
 				
 				ax[j].plot(binned_wave,binned_flux,color='k',label='TOBS:%.2f'%np.unique(sn['tobs'])[j])
 				ylim=ax[j].get_ylim()
