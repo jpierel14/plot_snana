@@ -190,8 +190,9 @@ def plot_lc(cid,base_name,noGrid):
                         [x for x in np.unique(sn['filter']) if x not in __band_order__])
 	
 	j=0
+
 	for nfig in range(int(math.ceil(rows/4.))): 
-		fig,ax=plt.subplots(nrows=min(len(all_bands[j:]),4),ncols=1,figsize=(8,8),sharex=True)
+		fig,ax=plt.subplots(nrows=min(len(all_bands),4),ncols=1,figsize=(8,8),sharex=True)
 		ax[0].set_title('SN%s'%cid[0],fontsize=16)
 		
 		for i in range(min(len(all_bands[j:]),4)):
@@ -247,6 +248,9 @@ def plot_cmd(genversion,cid_list,nml):
 			"' > OUT_TEMP_"+rand+".LOG"
 	
 	os.system(cmd)
+	if len(glob.glob('OUT_TEMP_'+rand+'*.TEXT'))==0:
+		print("There was an error in retrieving your SN")
+		sys.exit()
 	return(plotter,'OUT_TEMP_'+rand)
 
 def main():
