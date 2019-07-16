@@ -203,7 +203,7 @@ def plot_lc(cid,base_name,noGrid):
 			else:
 				lab=all_bands[j]
 				leg_size=12
-			j+=1
+			
 			ax[i].errorbar(temp_sn['time'],temp_sn['flux'],yerr=temp_sn['fluxerr'],
 						  fmt='.',markersize=8,color='k',
 						  label=lab)
@@ -215,6 +215,7 @@ def plot_lc(cid,base_name,noGrid):
 			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*np.max(temp_sn['flux'])))
 			if not noGrid:
 				ax[i].grid()
+			j+=1
 			#i+=1
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
 		
