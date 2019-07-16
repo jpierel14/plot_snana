@@ -226,16 +226,24 @@ def plot_lc(cid,base_name,noGrid):
 	#plt.savefig('SNANA_LC_%s.pdf'%'_'.join(cid),format='pdf',overwrite=True)
 	return(figs)
 
-def plot_cmd(genversion,cid_list):
-	if os.path.splitext(genversion)[1]=='.NML':
+def plot_cmd(genversion,cid_list,nml):
+	if nml is not None:
+		if os.path.splitext(nml)[1]!='.NML':
+			nml=os.path.splitext(nml)[0]+'.NML'
 		plotter='salt2'
 	else:
 		plotter='normal'
 	rand=str(np.random.randint(10000,100000))
-	cmd="snana.exe NOFILE VERSION_PHOTOMETRY "+genversion+\
-		" SNCCID_LIST "+cid_list+\
-		" CUTWIN_CID 0 0 SNTABLE_LIST 'SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
-		"' > OUT_TEMP_"+rand+".LOG"
+	if nml is not None:
+		cmd="snlc_fit.exe "+nml+" VERSION_PHOTOMETRY "+genversion+\
+			" SNCCID_LIST "+cid_list+\
+			" CUTWIN_CID 0 0 SNTABLE_LIST 'SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
+			"' > OUT_TEMP_"+rand+".LOG"
+	else:
+		cmd="snana.exe NOFILE VERSION_PHOTOMETRY "+genversion+\
+			" SNCCID_LIST "+cid_list+\
+			" CUTWIN_CID 0 0 SNTABLE_LIST 'SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
+			"' > OUT_TEMP_"+rand+".LOG"
 	
 	os.system(cmd)
 	return(plotter,'OUT_TEMP_'+rand)
@@ -249,6 +257,7 @@ def main():
 	parser.add_option("-i",help='CID(s) as comma separated list',action="store",type="string",dest="CID",default="None")
 	parser.add_option("-b",help='Bin size for spectral plotting',action="store",type="float",dest='bin_size',default=0)
 	parser.add_option("-v",help='Version',action="store",type='string',dest='version',default=None)
+	parser.add_option("-f",help='.NML filename',action="store",type='string',dest='nml_filename',default=None)
 	parser.add_option("--silent",help="Do not print anything",action="store_true",dest="silent",default=False)
 	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
@@ -262,7 +271,7 @@ def main():
 	if options.version is None:
 		raise RuntimeError("Need to define genversion")
 	
-	plotter_choice,options.base_name=plot_cmd(options.version,options.CID)
+	plotter_choice,options.base_name=plot_cmd(options.version,options.CID,options.nml_filename)
 	options.CID=options.CID.split(',')
 	filename=options.version+'.pdf'
 	num=0
