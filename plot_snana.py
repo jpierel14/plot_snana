@@ -229,8 +229,7 @@ def plot_lc(cid,base_name,noGrid):
 				ax[i].grid()
 			j+=1
 			#i+=1
-		print(j,min(len(all_bands),4))
-		for k in range(j,min(len(all_bands),4)):
+		for k in range(i,min(len(all_bands),4)):
 			fig.delaxes(ax[k])
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
 		ax[i].set_xlim(xlims)
