@@ -57,13 +57,14 @@ def read_spec(cid,base_name):
 			sn['mjd'].append(mjds[mjd_ind])
 	sn={k:np.array(sn[k]) for k in sn.keys()}
 	return(sn)
-def read_lc(cid,base_name):
+def read_lc(cid,base_name,plotter_choice):
 	names=['time','flux','fluxerr','filter','chi2']
 	peak=None
 	sn={k:[] for k in names} 
 	fit={k:[] for k in ['time','flux','filter']}
 	with open(base_name+".LCPLOT.TEXT",'rb') as f:
 		dat=f.readlines()
+	fitted=False
 	for line in dat:
 		temp=line.split()
 		if len(temp)>0 and b'VARNAMES:' in temp:
@@ -78,10 +79,20 @@ def read_lc(cid,base_name):
 				sn['filter'].append(str(temp[varnames.index('BAND')].decode('utf-8')))
 				sn['chi2'].append(float(temp[varnames.index('CHI2')]))
 			elif int(temp[varnames.index('DATAFLAG')])==0:
+				fitted=True
 				fit['time'].append(float(temp[varnames.index('Tobs')]))
 				fit['flux'].append(float(temp[varnames.index('FLUXCAL')]))
 				fit['filter'].append(str(temp[varnames.index('BAND')].decode('utf-8')))
-	
+	if fitted and plotter_choice=='salt2':
+		with open(base_name+".FITRES.TEXT",'rb') as f:
+			dat=f.readlines()
+		for line in dat:
+			temp=line.split()
+			if len(temp)>0 and b'VARNAMES:' in temp:
+				varnames=[str(x.decode('utf-8')) for x in temp]
+			elif len(temp)>0 and b'SN:' in temp and str(temp[varnames.index('CID')].decode('utf-8')) in cid: 
+				fit['params']={p:(temp[varnames.index(p)],temp[varnames.index(p+'ERR')]) for p in ['x1','c','x0']}
+				break
 	sn={k:np.array(sn[k]) for k in sn.keys()}
 	fit={k:np.array(fit[k]) for k in fit.keys()}
 	if len(fit['filter'])>0:
@@ -222,6 +233,7 @@ def plot_lc(cid,base_name,noGrid):
 			if len(fits)>0:
 				fit_time=np.arange(temp_sn['time'][0],temp_sn['time'][-1],1)
 				ax[i].plot(fit_time,fits[all_bands[j]](fit_time),color='r',label='Best Fit',linewidth=3)
+				ax[i].annotate('\n'.join([r'$%s: %.2f\pm%.2f$'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]) for fit_key in fits['params'].keys()]),xy=(.05,.9),xycoords='axes fraction',fontsize=14)
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
 			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*np.max(temp_sn['flux'])))
