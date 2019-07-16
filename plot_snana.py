@@ -190,6 +190,7 @@ def plot_lc(cid,base_name,noGrid):
                         [x for x in np.unique(sn['filter']) if x not in __band_order__])
 	
 	j=0
+	xlims=(np.min(sn['time'])*.9,np.max(sn['time'])*1.1)
 	sharedx=True
 	for nfig in range(int(math.ceil(rows/4.))): 
 		fig,ax=plt.subplots(nrows=min(len(all_bands),4),ncols=1,figsize=(8,8),sharex=sharedx)
@@ -219,10 +220,9 @@ def plot_lc(cid,base_name,noGrid):
 			j+=1
 			#i+=1
 		for k in range(j,min(len(all_bands),4)):
-			print(j,len(all_bands),k)
 			fig.delaxes(ax[k])
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
-		sharedx=ax[i]
+		ax[i].set_xlim(xlims)
 		figs.append(fig)
 		plt.close()
 	#fig.text(0.5, 0.02, 'Time (Rest Frame Days)', ha='center',fontsize=16)
