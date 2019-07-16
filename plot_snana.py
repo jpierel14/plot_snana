@@ -231,6 +231,7 @@ def plot_lc(cid,base_name,noGrid):
 			#i+=1
 		for k in range(i+1,min(len(all_bands),4)):
 			fig.delaxes(ax[k])
+		ax[i].tick_params(axis='x',labelbottom='on',bottom='on')
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
 		ax[i].set_xlim(xlims)
 		figs.append(fig)
