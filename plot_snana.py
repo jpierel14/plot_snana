@@ -91,7 +91,7 @@ def read_lc(cid,base_name,plotter_choice):
 			if len(temp)>0 and b'VARNAMES:' in temp:
 				varnames=[str(x.decode('utf-8')) for x in temp]
 			elif len(temp)>0 and b'SN:' in temp and str(temp[varnames.index('CID')].decode('utf-8')) in cid: 
-				fit['params']={p:(temp[varnames.index(p)],temp[varnames.index(p+'ERR')]) for p in ['x1','c','x0']}
+				fit['params']={p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) for p in ['x1','c','x0']}
 				break
 	sn={k:np.array(sn[k]) for k in sn.keys()}
 	fit={k:np.array(fit[k]) if k !='params' else fit['params'] for k in fit.keys()}
