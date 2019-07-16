@@ -193,13 +193,13 @@ def plot_lc(cid,base_name,noGrid):
 	minx=np.min(sn['time'])
 	maxx=np.max(sn['time'])
 	if minx<0:
-		minx*=1.1
+		minx=min(minx*1.1,minx-5)
 	else:
-		minx*=.9
+		minx=min(minx*.9,minx-5)
 	if maxx<0:
-		maxx*=.9
+		maxx=max(maxx*.9,maxx+5)
 	else:
-		maxx*=1.1
+		maxx=max(maxx*1.1,maxx+5)
 	xlims=(minx,maxx)
 	sharedx=True
 	for nfig in range(int(math.ceil(rows/4.))): 
