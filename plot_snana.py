@@ -190,7 +190,17 @@ def plot_lc(cid,base_name,noGrid):
                         [x for x in np.unique(sn['filter']) if x not in __band_order__])
 	
 	j=0
-	xlims=(np.min(sn['time'])*.9,np.max(sn['time'])*1.1)
+	minx=np.min(sn['time'])
+	maxx=np.max(sn['time'])
+	if minx<0:
+		minx*=1.1
+	else:
+		minx*=.9
+	if maxx<0:
+		maxx*=.9
+	else:
+		maxx*=1.1
+	xlims=(*.9,*1.1)
 	sharedx=True
 	for nfig in range(int(math.ceil(rows/4.))): 
 		fig,ax=plt.subplots(nrows=min(len(all_bands),4),ncols=1,figsize=(8,8),sharex=sharedx)
@@ -219,6 +229,7 @@ def plot_lc(cid,base_name,noGrid):
 				ax[i].grid()
 			j+=1
 			#i+=1
+		print(j,min(len(all_bands),4))
 		for k in range(j,min(len(all_bands),4)):
 			fig.delaxes(ax[k])
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
