@@ -191,8 +191,8 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 	#plt.savefig('SNANA_SPEC_%s.pdf'%'_'.join(cid),format='pdf',overwrite=True)
 	return(figs)
 
-def plot_lc(cid,base_name,noGrid):
-	sn,fits,peak=read_lc(cid,base_name)
+def plot_lc(cid,base_name,noGrid,plotter_choice):
+	sn,fits,peak=read_lc(cid,base_name,plotter_choice)
 	if len(sn['time'])==0:
 		return []
 	rows=int(math.ceil(len(np.unique(sn['filter']))))
@@ -324,14 +324,14 @@ def main():
 				for f in figs:
 					pdf.savefig(f)
 			elif options.lc:
-				figs=plot_lc([cid],options.base_name,options.noGrid)
+				figs=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
 				for f in figs:
 					pdf.savefig(f)
 			else:
 				figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 				for f in figs:
 					pdf.savefig(f)
-				figs=plot_lc([cid],options.base_name,options.noGrid)
+				figs=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
 				for f in figs:
 					pdf.savefig(f)
 	
