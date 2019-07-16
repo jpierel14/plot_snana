@@ -198,7 +198,7 @@ def plot_lc(cid,base_name,noGrid):
 			temp_sn={k:sn[k][np.where(sn['filter']==all_bands[j])[0]] for k in sn.keys()}
 			chi2=np.mean(temp_sn['chi2'])
 			if chi2>0:
-				lab=r'%s: $\chi^2$=%.1f'%(band,np.mean(temp_sn['chi2']))
+				lab=r'%s: $\chi^2$=%.1f'%(all_bands[j],np.mean(temp_sn['chi2']))
 				leg_size=10
 			else:
 				lab=all_bands[j]
@@ -209,7 +209,7 @@ def plot_lc(cid,base_name,noGrid):
 						  label=lab)
 			if len(fits)>0:
 				fit_time=np.arange(temp_sn['time'][0],temp_sn['time'][-1],1)
-				ax[i].plot(fit_time,fits[band](fit_time),color='r',label='Best Fit',linewidth=3)
+				ax[i].plot(fit_time,fits[all_bands[j]](fit_time),color='r',label='Best Fit',linewidth=3)
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
 			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*np.max(temp_sn['flux'])))
