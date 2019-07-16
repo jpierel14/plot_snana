@@ -248,6 +248,10 @@ def plot_cmd(genversion,cid_list,nml):
 			"' > OUT_TEMP_"+rand+".LOG"
 	
 	os.system(cmd)
+	with open('OUT_TEMP_'+rand+'.LOG','r+') as f:
+		content=f.read()
+		f.seek(0,0)
+		f.write(cmd+'\n'+content)
 	if len(glob.glob('OUT_TEMP_'+rand+'*.TEXT'))==0:
 		print("There was an error in retrieving your SN")
 		sys.exit()
