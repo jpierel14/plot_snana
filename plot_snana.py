@@ -219,6 +219,7 @@ def plot_lc(cid,base_name,noGrid):
 			j+=1
 			#i+=1
 		for k in range(j,min(len(all_bands),4)):
+			print(j,len(all_bands),k)
 			fig.delaxes(ax[k])
 		ax[i].set_xlabel('MJD-%.2f'%peak,fontsize=16)
 		sharedx=ax[i]
