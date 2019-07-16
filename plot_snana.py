@@ -98,6 +98,7 @@ def read_lc(cid,base_name,plotter_choice):
 	if len(fit['filter'])>0:
 		fits={k:interp1d(fit['time'][fit['filter']==k],
 					 fit['flux'][fit['filter']==k]) for k in np.unique(fit['filter'])}
+		fits['params']=fit['params']
 	else:
 		fits=[]
 	return(sn,fits,peak)
