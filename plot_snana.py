@@ -9,7 +9,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import os,glob,math,sys
+import os,glob,math,sys,textwrap
 from optparse import OptionParser
 from scipy.interpolate import interp1d
 
@@ -251,7 +251,7 @@ def plot_cmd(genversion,cid_list,nml):
 	with open('OUT_TEMP_'+rand+'.LOG','r+') as f:
 		content=f.read()
 		f.seek(0,0)
-		f.write(cmd+'\n'+content)
+		f.write(textwrap.fill(cmd,80)+'\n'+content)
 	if len(glob.glob('OUT_TEMP_'+rand+'*.TEXT'))==0:
 		print("There was an error in retrieving your SN")
 		sys.exit()
