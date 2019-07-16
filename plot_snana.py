@@ -217,7 +217,7 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 	for nfig in range(int(math.ceil(rows/4.))): 
 		fig,ax=plt.subplots(nrows=min(len(all_bands),4),ncols=1,figsize=(8,8),sharex=sharedx)
 		ax[0].set_title('SN%s'%cid[0],fontsize=16)
-		
+		fit_print=False
 		for i in range(min(len(all_bands[j:]),4)):
 			temp_sn={k:sn[k][np.where(sn['filter']==all_bands[j])[0]] for k in sn.keys()}
 			chi2=np.mean(temp_sn['chi2'])
@@ -234,8 +234,10 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 			if len(fits)>0:
 				fit_time=np.arange(temp_sn['time'][0],temp_sn['time'][-1],1)
 				ax[i].plot(fit_time,fits[all_bands[j]](fit_time),color='r',label='Best Fit',linewidth=3)
-				ax[i].annotate('\n'.join([r'$%s: %.2f\pm%.2f$'%(fit_key,fits['params'][fit_key][0],
-					fits['params'][fit_key][1]) for fit_key in fits['params'].keys()]),xy=(.05,.8),xycoords='axes fraction',fontsize=10)
+				if not fit_print:
+					ax[i].annotate('\n'.join([r'$%s: %.2f\pm%.2f$'%(fit_key,fits['params'][fit_key][0],
+						fits['params'][fit_key][1]) for fit_key in fits['params'].keys()]),xy=(.05,.7),xycoords='axes fraction',fontsize=8)
+				fit_print=True
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
 			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*np.max(temp_sn['flux'])))
