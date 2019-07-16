@@ -253,7 +253,7 @@ def plot_cmd(genversion,cid_list,nml):
 	if nml is not None:
 		cmd="snlc_fit.exe "+nml+" VERSION_PHOTOMETRY "+genversion+\
 			" SNCCID_LIST "+cid_list+\
-			" CUTWIN_CID 0 0 SNTABLE_LIST 'SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
+			" CUTWIN_CID 0 0 SNTABLE_LIST 'FITRES(text:key) SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
 			"' > OUT_TEMP_"+rand+".LOG"
 	else:
 		cmd="snana.exe NOFILE VERSION_PHOTOMETRY "+genversion+\
