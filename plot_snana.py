@@ -200,7 +200,7 @@ def plot_lc(cid,base_name,noGrid):
 		maxx*=.9
 	else:
 		maxx*=1.1
-	xlims=(*.9,*1.1)
+	xlims=(minx,maxx)
 	sharedx=True
 	for nfig in range(int(math.ceil(rows/4.))): 
 		fig,ax=plt.subplots(nrows=min(len(all_bands),4),ncols=1,figsize=(8,8),sharex=sharedx)
