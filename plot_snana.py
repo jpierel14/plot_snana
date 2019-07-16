@@ -236,7 +236,7 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 				ax[i].plot(fit_time,fits[all_bands[j]](fit_time),color='r',label='Best Fit',linewidth=3)
 				if not fit_print:
 					ax[i].annotate('\n'.join([r'$%s: %.2e\pm%.2e$'%(fit_key,fits['params'][fit_key][0],
-						fits['params'][fit_key][1]) for fit_key in fits['params'].keys()]),xy=(.02,.65),xycoords='axes fraction',fontsize=9)
+						fits['params'][fit_key][1]) for fit_key in fits['params'].keys()]),xy=(.02,.65),xycoords='axes fraction',fontsize=6)
 				fit_print=True
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
