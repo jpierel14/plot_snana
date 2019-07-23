@@ -238,7 +238,7 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 				if not fit_print:
 					to_print=[]
 					for fit_key in fits['params'].keys():
-						if fit_key in =='x0':
+						if fit_key =='x0':
 							to_print.append(r'$%s: %.2e\pm%.2e$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
 						elif fit_key in ['x1','c']:
 							to_print.append(r'$%s: %.2f\pm%.2f$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
@@ -307,7 +307,7 @@ def output_fit_res(fit_res,filename):
 												fitres[cid]['x1'][1],
 												fitres[cid]['c'][0],
 												fitres[cid]['c'][1]))
-			
+
 
 def main():
 
