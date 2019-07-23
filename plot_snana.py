@@ -389,12 +389,13 @@ def main():
 				if not options.dist or len(fits)==0:
 					for f in figs:
 						pdf.savefig(f)
-				else:
-					figs=create_dists(fits['params'])
-					for f in figs:
-						pdf.savefig(f)
+				
 			if len(fits)>0:
 				fitres[cid]=fits['params']
+		if options.dist and len(fitres)>0:
+			figs=create_dists(fitres['params'])
+			for f in figs:
+				pdf.savefig(f)
 	if options.res_out:
 		output_fit_res(fitres,filename)
 	if not options.noclean:
