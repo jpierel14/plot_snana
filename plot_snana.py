@@ -239,13 +239,13 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 					to_print=[]
 					for fit_key in fits['params'].keys():
 						if fit_key =='x0':
-							to_print.append('$%s: %.2e\pm%.2e$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
+							to_print.append(['$%s: %.2e'%(fit_key,fits['params'][fit_key][0]),'%.2e$\n'%fits['params'][fit_key][1]])
 						elif fit_key in ['x1','c']:
-							to_print.append('$%s: %.2f\pm%.2f$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
+							to_print.append(['$%s: %.2f'%(fit_key,fits['params'][fit_key][0]),'%.2f$\n'%fits['params'][fit_key][1]])
 						else:
 							to_print.append('%s: %.2f\n'%(fit_key,fits['params'][fit_key]))
 
-					ax[i].annotate(to_print,xy=(.02,.65),xycoords='axes fraction',fontsize=6)
+					ax[i].annotate([x[0]+r'\pm'+x[1] if isinstance(x,list) else x for x in to_print],xy=(.02,.65),xycoords='axes fraction',fontsize=6)
 				fit_print=True
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
