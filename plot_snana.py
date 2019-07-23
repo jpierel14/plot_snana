@@ -297,7 +297,7 @@ def plot_cmd(genversion,cid_list,nml):
 		sys.exit()
 	return(plotter,'OUT_TEMP_'+rand)
 
-def output_fit_res(fit_res,filename):
+def output_fit_res(fitres,filename):
 	with open(os.path.splitext(filename)[0]+'.dat','w') as f:
 		f.write("VARNAMES: CID x0 x0err x1 x1err c cerr")
 		for cid in fitres.keys():
