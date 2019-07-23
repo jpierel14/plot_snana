@@ -234,10 +234,18 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 			if len(fits)>0:
 				fit_time=np.arange(temp_sn['time'][0],temp_sn['time'][-1],1)
 				ax[i].plot(fit_time,fits[all_bands[j]](fit_time),color='r',label='Best Fit',linewidth=3)
+
 				if not fit_print:
-					ax[i].annotate('\n'.join([r'$%s: %.2e\pm%.2e$'%(fit_key,fits['params'][fit_key][0],
-						fits['params'][fit_key][1]) if fit_key in ['x0','x1','c'] else '%s: %.1f'%(fit_key,fits['params'][fit_key]) 
-						for fit_key in fits['params'].keys()]),xy=(.02,.65),xycoords='axes fraction',fontsize=6)
+					to_print=[]
+					for fit_key in fits['params'].keys():
+						if fit_key in =='x0':
+							to_print.append(r'$%s: %.2e\pm%.2e$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
+						elif fit_key in ['x1','c']:
+							to_print.append(r'$%s: %.2f\pm%.2f$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
+						else:
+							to_print.append('%s: %.2f\n'%(fit_key,fits['params'][fit_key]))
+
+					ax[i].annotate(to_print,xy=(.02,.65),xycoords='axes fraction',fontsize=6)
 				fit_print=True
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
@@ -257,7 +265,8 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 	#fig.text(0.04, .5, 'Flux', va='center', rotation='vertical',fontsize=16)
 		
 	#plt.savefig('SNANA_LC_%s.pdf'%'_'.join(cid),format='pdf',overwrite=True)
-	return(figs)
+
+	return(figs,fits)
 
 def plot_cmd(genversion,cid_list,nml):
 	if nml is not None:
@@ -288,6 +297,18 @@ def plot_cmd(genversion,cid_list,nml):
 		sys.exit()
 	return(plotter,'OUT_TEMP_'+rand)
 
+def output_fit_res(fit_res,filename):
+	with open(os.splitext(filename)[0]+'.dat','w') as f:
+		f.write("VARNAMES: CID x0 x0err x1 x1err c cerr")
+		for cid in fitres.keys():
+			f.write("SN: %i %f %f %f %f %f %f"%(fitres[cid]['x0'][0],
+												fitres[cid]['x0'][1],
+												fitres[cid]['x1'][0],
+												fitres[cid]['x1'][1],
+												fitres[cid]['c'][0],
+												fitres[cid]['c'][1]))
+			
+
 def main():
 
 	parser = OptionParser()
@@ -300,6 +321,7 @@ def main():
 	parser.add_option("-f",help='.NML filename',action="store",type='string',dest='nml_filename',default=None)
 	parser.add_option("--silent",help="Do not print anything",action="store_true",dest="silent",default=False)
 	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
+	parser.add_option("--fitres",help="Output a file containing fit results.",action="store_true",dest="res_out",default=False)
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
 	(options,args)=parser.parse_args()
 
@@ -320,6 +342,7 @@ def main():
 	while os.path.exists(filename):
 		num+=1
 		filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
+	fitres={}
 	with PdfPages(filename) as pdf:
 		for cid in options.CID:
 			if not options.silent:
@@ -329,17 +352,20 @@ def main():
 				for f in figs:
 					pdf.savefig(f)
 			elif options.lc:
-				figs=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
+				figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
 				for f in figs:
 					pdf.savefig(f)
 			else:
 				figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 				for f in figs:
 					pdf.savefig(f)
-				figs=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
+				figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
 				for f in figs:
 					pdf.savefig(f)
-	
+			if len(fits)>0:
+				fitres[cid]=fits['params']
+	if options.res_out:
+		output_fit_res(fitres,filename)
 	if not options.noclean:
 		for x in glob.glob(options.base_name+'*'):
 			os.remove(x)
