@@ -245,11 +245,15 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 						else:
 							to_print.append('%s: %.2f\n'%(fit_key,fits['params'][fit_key]))
 
-					ax[i].annotate(''.join([x[0]+r'\pm'+x[1] if isinstance(x,list) else x for x in to_print]),xy=(.02,.65),xycoords='axes fraction',fontsize=6)
+					ax[i].annotate(''.join([x[0]+r'\pm'+x[1] if isinstance(x,list) else x for x in to_print]),xy=(.02,.6),xycoords='axes fraction',fontsize=6)
 				fit_print=True
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
-			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*np.max(temp_sn['flux'])))
+			if len(fits)>0:
+				maxFlux=np.max(np.max(temp_sn['flux']),fits[all_bands[j]](fit_time))
+			else:
+				maxFlux=np.max(temp_sn['flux'])
+			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*maxFlux))
 			if not noGrid:
 				ax[i].grid()
 			j+=1
