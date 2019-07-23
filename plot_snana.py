@@ -301,7 +301,8 @@ def output_fit_res(fitres,filename):
 	with open(os.path.splitext(filename)[0]+'.dat','w') as f:
 		f.write("VARNAMES: CID x0 x0err x1 x1err c cerr")
 		for cid in fitres.keys():
-			f.write("SN: %i %f %f %f %f %f %f"%(fitres[cid]['x0'][0],
+			f.write("SN: %i %f %f %f %f %f %f"%(cid,
+												fitres[cid]['x0'][0],
 												fitres[cid]['x0'][1],
 												fitres[cid]['x1'][0],
 												fitres[cid]['x1'][1],
