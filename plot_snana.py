@@ -250,7 +250,7 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
 			if len(fits)>0:
-				maxFlux=np.max(np.max(temp_sn['flux']),fits[all_bands[j]](fit_time))[0]
+				maxFlux=max(np.max(temp_sn['flux']),np.max(fits[all_bands[j]](fit_time)))
 			else:
 				maxFlux=np.max(temp_sn['flux'])
 			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*maxFlux))
