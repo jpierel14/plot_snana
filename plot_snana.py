@@ -239,9 +239,9 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 					to_print=[]
 					for fit_key in fits['params'].keys():
 						if fit_key =='x0':
-							to_print.append('$%s: %.2e\\pm%.2e$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
+							to_print.append('$%s: %.2e\pm%.2e$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
 						elif fit_key in ['x1','c']:
-							to_print.append('$%s: %.2f\\pm%.2f$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
+							to_print.append('$%s: %.2f\pm%.2f$\n'%(fit_key,fits['params'][fit_key][0],fits['params'][fit_key][1]))
 						else:
 							to_print.append('%s: %.2f\n'%(fit_key,fits['params'][fit_key]))
 
