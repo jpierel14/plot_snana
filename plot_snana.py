@@ -313,6 +313,22 @@ def output_fit_res(fitres,filename):
 												fitres[cid]['c'][0],
 												fitres[cid]['c'][1]))
 
+def create_dists(fitres):
+	res={p:[] for p in ['x0','x1','c']}
+	for cid in fitres.keys():
+		for p in ['x0','x1','c']:
+			res[p].append(fitres[cid][p][0])
+
+	figs=[]
+	for p in ['x0','x1','c']:
+		fig=plt.figure(figsize=(10,8))
+		plt.hist(res[p])
+		plt.xlabel("%s Parameter"%p,fontsize=16)
+		plt.ylabel("N SN",fontsize=16)
+		figs.append(fig)
+
+	return(figs)
+
 
 def main():
 
@@ -327,6 +343,7 @@ def main():
 	parser.add_option("--silent",help="Do not print anything",action="store_true",dest="silent",default=False)
 	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
 	parser.add_option("--fitres",help="Output a file containing fit results.",action="store_true",dest="res_out",default=False)
+	parser.add_option("--dist",help="Just plot the distributions of fitting parameters.",action="store_true",dest="dist",default=False)
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
 	(options,args)=parser.parse_args()
 
@@ -335,6 +352,9 @@ def main():
 		sys.exit()
 	if options.CID=="None":
 		raise RuntimeError("Need to define CID")
+	elif '-' in options.CID:
+		options.CID = ','.join([str(i) for i in range(int(options.CID[:options.CID.find('-')]),
+													int(options.CID[options.CID.find('-')+1:])+1)])
 	if options.version is None:
 		raise RuntimeError("Need to define genversion")
 	
@@ -362,11 +382,17 @@ def main():
 					pdf.savefig(f)
 			else:
 				figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
-				for f in figs:
-					pdf.savefig(f)
+				if not options.dist:
+					for f in figs:
+						pdf.savefig(f)
 				figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
-				for f in figs:
-					pdf.savefig(f)
+				if not options.dist or len(fits)==0:
+					for f in figs:
+						pdf.savefig(f)
+				else:
+					figs=create_dists(fits)
+					for f in figs:
+						pdf.savefig(f)
 			if len(fits)>0:
 				fitres[cid]=fits['params']
 	if options.res_out:
