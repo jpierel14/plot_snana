@@ -393,7 +393,7 @@ def main():
 			if len(fits)>0:
 				fitres[cid]=fits['params']
 		if options.dist and len(fitres)>0:
-			figs=create_dists(fitres['params'])
+			figs=create_dists(fitres)
 			for f in figs:
 				pdf.savefig(f)
 	if options.res_out:
