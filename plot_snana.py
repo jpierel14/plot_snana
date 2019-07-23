@@ -390,7 +390,7 @@ def main():
 					for f in figs:
 						pdf.savefig(f)
 				else:
-					figs=create_dists(fits)
+					figs=create_dists(fits['params'])
 					for f in figs:
 						pdf.savefig(f)
 			if len(fits)>0:
