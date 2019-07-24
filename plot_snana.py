@@ -336,6 +336,14 @@ def create_dists(fitres):
 	return(figs)
 
 
+def find_files(version):
+	for dirpath,dirnames,filenames in os.walk(os.environ["SNDATA_ROOT"]):
+		for filename in filenames:
+			if filename==version+'.LIST':
+				list_files=[x[os.path.splitext(x).rfind('_SN')+3:].lstrip('0') for x in np.loadtxt(os.path.join(dirpath,filename),dtype="%s")]
+				return(list_files)
+
+
 def main():
 
 	parser = OptionParser()
@@ -356,13 +364,16 @@ def main():
 	if len(sys.argv)==1:
 		parser.print_help(sys.stderr)
 		sys.exit()
+	if options.version is None:
+		raise RuntimeError("Need to define genversion")
 	if options.CID=="None":
-		raise RuntimeError("Need to define CID")
+		print("No CID given, assuming all...")
+		options.CID = ','.join(find_files(options.version))
 	elif '-' in options.CID:
 		options.CID = ','.join([str(i) for i in range(int(options.CID[:options.CID.find('-')]),
 													int(options.CID[options.CID.find('-')+1:])+1)])
-	if options.version is None:
-		raise RuntimeError("Need to define genversion")
+
+	
 	
 	plotter_choice,options.base_name=plot_cmd(options.version,options.CID,options.nml_filename)
 	options.CID=options.CID.split(',')
