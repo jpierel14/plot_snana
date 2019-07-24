@@ -340,7 +340,7 @@ def find_files(version):
 	for dirpath,dirnames,filenames in os.walk(os.environ["SNDATA_ROOT"]):
 		for filename in filenames:
 			if filename==version+'.LIST':
-				list_files=[x[os.path.splitext(x).rfind('_SN')+3:].lstrip('0') for x in np.loadtxt(os.path.join(dirpath,filename),dtype=str)]
+				list_files=[x[os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') for x in np.loadtxt(os.path.join(dirpath,filename),dtype=str)]
 				return(list_files)
 
 
