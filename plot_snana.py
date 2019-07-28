@@ -12,6 +12,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import os,glob,math,sys,textwrap
 from optparse import OptionParser
 from scipy.interpolate import interp1d
+import seaborn as sns
 
 
 __band_order__=np.append(['u','b','g','r','i','z','y','j','h','k'],
@@ -333,33 +334,53 @@ def output_fit_res(fitres,filename):
 												fitres[cid]['c'][0],
 												fitres[cid]['c'][1]))
 
-def create_dists(fitres):
+def create_dists(fitres,files):
+
 	res={p:[] for p in ['x0','x1','c']}
+	res['byosed'] = []
+	param=None
 	for cid in fitres.keys():
 		for p in ['x0','x1','c']:
 			try:
 				res[p].append(fitres[cid][p][0])
+				with open(files[cid],'rb') as f:
+					all_dat=f.readlines()
+				for line in all_dat:
+					temp=line.split()
+					if len(temp)>0 and b'BYOSED_NPAR' in temp and temp[1]!=1:
+						break
+					elif b'BYOSED_PARAM' in temp:
+						if param is None:
+							param = temp[0].decode('utf-8')
+							param=param[param.find('(')+1:param.find(')')]
+						res['byosed'].append(float(temp[1].decode('utf-8')))
+
 			except:
 				print("Skipping %s for distributions..."%cid)
 
 	figs=[]
 	for p in ['x0','x1','c']:
 		fig=plt.figure(figsize=(10,8))
-		plt.hist(res[p])
-		plt.xlabel("%s Parameter"%p,fontsize=16)
-		plt.ylabel("N SN",fontsize=16)
+		if param is not None:
+			sns.jointplot(x=res[p], y=res['byosed'], kind='kde')
+		else:
+			plt.hist(res[p])
+			plt.xlabel("%s Parameter"%p,fontsize=16)
+			plt.ylabel("N SN",fontsize=16)
 		figs.append(fig)
 
 	return(figs)
 
 
-def find_files(version):
+def find_files(version,cid_list):
 	for dirpath,dirnames,filenames in os.walk(os.environ["SNDATA_ROOT"]):
 		for dirname in dirnames:
 			
 			if dirname == version:
-				list_files=[os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') for x in np.loadtxt(os.path.join(dirpath,os.path.join(dirname,version+'.LIST')),dtype=str)]
-				print([x for x in np.arange(1,1001,1) if x not in np.array(list_files).astype(int)],len(list_files))
+				list_files={os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0'):x if os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') 
+					in cid_list for x in np.loadtxt(os.path.join(dirpath,os.path.join(dirname,version+'.LIST')),dtype=str)}
+								
+				
 				return(list_files)
 
 
@@ -429,7 +450,8 @@ def main():
 			if len(fits)>0:
 				fitres[cid]=fits['params']
 		if options.dist and len(fitres)>0:
-			figs=create_dists(fitres)
+			files=find_files(options.version,options.CID)
+			figs=create_dists(fitres,files)
 			for f in figs:
 				pdf.savefig(f)
 	if options.res_out:
