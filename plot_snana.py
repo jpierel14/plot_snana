@@ -195,7 +195,7 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 def plot_lc(cid,base_name,noGrid,plotter_choice):
 	sn,fits,peak=read_lc(cid,base_name,plotter_choice)
 	if len(sn['time'])==0:
-		return []
+		return [[],[]]
 	rows=int(math.ceil(len(np.unique(sn['filter']))))
 	figs=[]
 	all_bands=np.append([x for x in __band_order__ if x in np.unique(sn['filter'])],
@@ -284,10 +284,14 @@ def plot_cmd(genversion,cid_list,nml):
 		plotter='normal'
 	rand=str(np.random.randint(10000,100000))
 	if nml is not None:
-		cmd="snlc_fit.exe "+nml+" VERSION_PHOTOMETRY "+genversion+\
-			" SNCCID_LIST "+cid_list+\
-			" CUTWIN_CID 0 0 SNTABLE_LIST 'FITRES(text:key) SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
-			"' > OUT_TEMP_"+rand+".LOG"
+		if cid_list is not None:
+			cmd="snlc_fit.exe "+nml+" VERSION_PHOTOMETRY "+genversion+\
+				" SNCCID_LIST "+cid_list+\
+				" CUTWIN_CID 0 0 SNTABLE_LIST 'FITRES(text:key) SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
+				"' > OUT_TEMP_"+rand+".LOG"
+		else:
+			cmd="snlc_fit.exe "+nml+" VERSION_PHOTOMETRY "+genversion+" SNTABLE_LIST "+\
+				"'FITRES(text:key) SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX OUT_TEMP_"+rand+" > OUT_TEMP_"+rand+".LOG"
 	else:
 		cmd="snana.exe NOFILE VERSION_PHOTOMETRY "+genversion+\
 			" SNCCID_LIST "+cid_list+\
@@ -295,14 +299,27 @@ def plot_cmd(genversion,cid_list,nml):
 			"' > OUT_TEMP_"+rand+".LOG"
 	
 	os.system(cmd)
-	with open('OUT_TEMP_'+rand+'.LOG','r+') as f:
+	with open('OUT_TEMP_'+rand+'.LOG','rb+') as f:
 		content=f.read()
 		f.seek(0,0)
-		f.write('SNANA COMMAND:\n\n'+textwrap.fill(cmd,80)+'\n'+content)
+		f.write(b'SNANA COMMAND:\n\n'+bytearray(textwrap.fill(cmd,80),encoding='utf-8')+b'\n'+content)
 	if len(glob.glob('OUT_TEMP_'+rand+'*.TEXT'))==0:
 		print("There was an error in retrieving your SN")
 		sys.exit()
-	return(plotter,'OUT_TEMP_'+rand)
+	with open("OUT_TEMP_"+rand+".FITRES.TEXT",'rb') as f:
+		all_dat=f.readlines()
+	if cid_list is None:
+		all_cids=[]
+		for line in all_dat:
+			temp=line.split()
+			if len(temp)>0 and b'VARNAMES:' in temp:
+				varnames=[str(x.decode('utf-8')) for x in temp]
+			elif len(temp)>0 and b"SN:" in temp:
+				all_cids.append(str(temp[varnames.index('CID')].decode('utf-8')))
+		all_cids=','.join(all_cids)
+	else:
+		all_cids=cid_list
+	return(plotter,'OUT_TEMP_'+rand,all_cids)
 
 def output_fit_res(fitres,filename):
 	with open(os.path.splitext(filename)[0]+'.fitres','w') as f:
@@ -338,9 +355,11 @@ def create_dists(fitres):
 
 def find_files(version):
 	for dirpath,dirnames,filenames in os.walk(os.environ["SNDATA_ROOT"]):
-		for filename in filenames:
-			if filename==version+'.LIST':
-				list_files=[x[os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') for x in np.loadtxt(os.path.join(dirpath,filename),dtype=str)]
+		for dirname in dirnames:
+			
+			if dirname == version:
+				list_files=[os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') for x in np.loadtxt(os.path.join(dirpath,os.path.join(dirname,version+'.LIST')),dtype=str)]
+				print([x for x in np.arange(1,1001,1) if x not in np.array(list_files).astype(int)],len(list_files))
 				return(list_files)
 
 
@@ -368,14 +387,14 @@ def main():
 		raise RuntimeError("Need to define genversion")
 	if options.CID=="None":
 		print("No CID given, assuming all...")
-		options.CID = ','.join(find_files(options.version))
+		options.CID = None#','.join(find_files(options.version))
 	elif '-' in options.CID:
 		options.CID = ','.join([str(i) for i in range(int(options.CID[:options.CID.find('-')]),
 													int(options.CID[options.CID.find('-')+1:])+1)])
 
 	
 	
-	plotter_choice,options.base_name=plot_cmd(options.version,options.CID,options.nml_filename)
+	plotter_choice,options.base_name,options.CID=plot_cmd(options.version,options.CID,options.nml_filename)
 	options.CID=options.CID.split(',')
 	filename=options.version+'.pdf'
 	num=0
