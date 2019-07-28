@@ -340,30 +340,37 @@ def create_dists(fitres,files):
 	res['byosed'] = []
 	param=None
 	for cid in fitres.keys():
+		with open(files[cid],'rb') as f:
+			all_dat=f.readlines()
+		for line in all_dat:
+			temp=line.split()
+			if len(temp)>0 and b'BYOSED_NPAR:' in temp and int(temp[1].decode('utf-8'))!=1:
+				break
+			elif len(temp)>0 and b'BYOSED_PARAM' in temp[0]:
+				if param is None:
+					param = temp[0].decode('utf-8')
+					param=param[param.find('(')+1:param.find(')')]
+				res['byosed'].append(float(temp[1].decode('utf-8')))
+				
 		for p in ['x0','x1','c']:
 			try:
 				res[p].append(fitres[cid][p][0])
-				with open(files[cid],'rb') as f:
-					all_dat=f.readlines()
-				for line in all_dat:
-					temp=line.split()
-					if len(temp)>0 and b'BYOSED_NPAR' in temp and temp[1]!=1:
-						break
-					elif b'BYOSED_PARAM' in temp:
-						if param is None:
-							param = temp[0].decode('utf-8')
-							param=param[param.find('(')+1:param.find(')')]
-						res['byosed'].append(float(temp[1].decode('utf-8')))
 
-			except:
+			except RuntimeError:
 				print("Skipping %s for distributions..."%cid)
 
 	figs=[]
 	for p in ['x0','x1','c']:
-		fig=plt.figure(figsize=(10,8))
+		
 		if param is not None:
-			sns.jointplot(x=res[p], y=res['byosed'], kind='kde')
+			ax = sns.jointplot(x=res[p], y=res['byosed'], kind='kde')
+			fig=plt.gcf()
+			fig.set_size_inches(10, 8)
+			
+			ax.set_axis_labels("%s Parameter"%p,"Simulated %s"%(' '.join([x[0]+x[1:].lower() for x in param.split('_')])),fontsize=16)
+			
 		else:
+			fig=plt.figure(figsize=(10,8))
 			plt.hist(res[p])
 			plt.xlabel("%s Parameter"%p,fontsize=16)
 			plt.ylabel("N SN",fontsize=16)
@@ -377,8 +384,7 @@ def find_files(version,cid_list):
 		for dirname in dirnames:
 			
 			if dirname == version:
-				list_files={os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0'):x if os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') 
-					in cid_list for x in np.loadtxt(os.path.join(dirpath,os.path.join(dirname,version+'.LIST')),dtype=str)}
+				list_files={os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0'):os.path.join(dirpath,dirname,x) for x in np.loadtxt(os.path.join(dirpath,os.path.join(dirname,version+'.LIST')),dtype=str) if os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') in cid_list}
 								
 				
 				return(list_files)
