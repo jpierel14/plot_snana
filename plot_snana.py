@@ -363,10 +363,15 @@ def create_dists(fitres,files):
 	for p in ['x0','x1','c']:
 		
 		if param is not None:
+			mean_valx=np.mean(res[p])
+			mean_valy=np.mean(res['byosed'])
+			std_valx=np.std(res[p])
+			std_valy=np.std(res['byosed'])
 			ax = sns.jointplot(x=res[p], y=res['byosed'], kind='kde')
 			fig=plt.gcf()
 			fig.set_size_inches(10, 8)
-			
+			ax.ax_marg_x.set_xlim(mean_valx-3*std_valx, mean_valx+3*std_valx)
+			ax.ax_marg_y.set_ylim(mean_valy-3*std_valy, mean_valy+3*std_valy)
 			ax.set_axis_labels("%s Parameter"%p,"Simulated %s"%(' '.join([x[0]+x[1:].lower() for x in param.split('_')])),fontsize=16)
 			
 		else:
