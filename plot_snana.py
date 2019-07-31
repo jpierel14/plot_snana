@@ -104,6 +104,20 @@ def read_lc(cid,base_name,plotter_choice):
 		fits=[]
 	return(sn,fits,peak)
 
+def read_fitres(fitres_filename):
+	fit={}
+	with open(fitres_filename,'rb') as f:
+			dat=f.readlines()
+		for line in dat:
+			temp=line.split()
+			if len(temp)>0 and b'VARNAMES:' in temp:
+				varnames=[str(x.decode('utf-8')) for x in temp]
+			elif len(temp)>0 and b'SN:' in temp and str(temp[varnames.index('CID')].decode('utf-8')) in cid: 
+				fit['params']={p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}
+				break
+	
+	return(fit)
+
 def plot_spec(cid,bin_size,base_name,noGrid):
 	sn=read_spec(cid,base_name)
 
@@ -148,7 +162,7 @@ def plot_spec(cid,bin_size,base_name,noGrid):
 				ax[j].legend(fontsize=12)
 
 			
-				ax[j].set_ylabel('Flux',fontsize=16)
+				ax[j].set_ylabel(r'$F_\lambda$',fontsize=16)
 				if not noGrid:
 					ax[j].grid()
 				m+=1
@@ -276,7 +290,7 @@ def plot_lc(cid,base_name,noGrid,plotter_choice):
 
 	return(figs,fits)
 
-def plot_cmd(genversion,cid_list,nml):
+def plot_cmd(genversion,cid_list,nml,isdist):
 	if nml is not None:
 		if os.path.splitext(nml)[1]!='.NML':
 			nml=os.path.splitext(nml)[0]+'.NML'
@@ -290,8 +304,11 @@ def plot_cmd(genversion,cid_list,nml):
 				" SNCCID_LIST "+cid_list+\
 				" CUTWIN_CID 0 0 SNTABLE_LIST 'FITRES(text:key) SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX 'OUT_TEMP_"+rand+\
 				"' > OUT_TEMP_"+rand+".LOG"
-		else:
+		elif isdist:
 			cmd="snlc_fit.exe "+nml+" VERSION_PHOTOMETRY "+genversion+" SNTABLE_LIST "+\
+				"'FITRES(text:key) SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX OUT_TEMP_"+rand+" > OUT_TEMP_"+rand+".LOG"
+		else:
+			cmd="snlc_fit.exe "+nml+" VERSION_PHOTOMETRY "+genversion+" MXEVT_PROCESS 5 SNTABLE_LIST "+\
 				"'FITRES(text:key) SNANA(text:key) LCPLOT(text:key) SPECPLOT(text:key)' TEXTFILE_PREFIX OUT_TEMP_"+rand+" > OUT_TEMP_"+rand+".LOG"
 	else:
 		cmd="snana.exe NOFILE VERSION_PHOTOMETRY "+genversion+\
@@ -401,14 +418,15 @@ def main():
 	parser.add_option("--spec",help='Plot only spectra',action="store_true",dest="spec",default=False)
 	parser.add_option("--lc",help='Plot only LC',action="store_true",dest="lc",default=False)
 	parser.add_option("--noclean",help='Leave intermediate files for debugging',action="store_true",dest="noclean",default=False)
-	parser.add_option("-i",help='CID(s) as comma separated list',action="store",type="string",dest="CID",default="None")
+	parser.add_option("-i",help='CID(s) as comma separated list or range (1-10)',action="store",type="string",dest="CID",default="None")
 	parser.add_option("-b",help='Bin size for spectral plotting',action="store",type="float",dest='bin_size',default=0)
 	parser.add_option("-v",help='Version',action="store",type='string',dest='version',default=None)
 	parser.add_option("-f",help='.NML filename',action="store",type='string',dest='nml_filename',default=None)
+	parser.add_option("-F",help='fitres filename, used to create distributions of SALT2 fitting parameters.',action="store",type='string',dest='fitres_filename',default=None)
 	parser.add_option("--silent",help="Do not print anything",action="store_true",dest="silent",default=False)
 	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
 	parser.add_option("--fitres",help="Output a file containing fit results.",action="store_true",dest="res_out",default=False)
-	parser.add_option("--dist",help="Just plot the distributions of fitting parameters.",action="store_true",dest="dist",default=False)
+	parser.add_option("--dist",help="Fit and then plot the distributions of fitting parameters.",action="store_true",dest="dist",default=False)
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
 	(options,args)=parser.parse_args()
 
@@ -418,58 +436,75 @@ def main():
 	if options.version is None:
 		raise RuntimeError("Need to define genversion")
 	if options.CID=="None":
-		print("No CID given, assuming all...")
-		options.CID = None#','.join(find_files(options.version))
+		if options.dist:
+			print("No CID given, assuming all...")
+		else:
+			print("No CID given, assuming first 5...")
+
 	elif '-' in options.CID:
 		options.CID = ','.join([str(i) for i in range(int(options.CID[:options.CID.find('-')]),
 													int(options.CID[options.CID.find('-')+1:])+1)])
 
 	
-	
-	plotter_choice,options.base_name,options.CID=plot_cmd(options.version,options.CID,options.nml_filename)
-	options.CID=options.CID.split(',')
-	filename=options.version+'.pdf'
-	num=0
-	if os.path.exists(filename):
-		filename=os.path.splitext(filename)[0]+'_'+str(num)+'.pdf'
-	while os.path.exists(filename):
-		num+=1
-		filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
-	fitres={}
-	with PdfPages(filename) as pdf:
-		for cid in options.CID:
-			if not options.silent:
-				print("Plotting SN %s"%cid)
-			if options.spec:
-				figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
-				for f in figs:
-					pdf.savefig(f)
-			elif options.lc:
-				figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
-				for f in figs:
-					pdf.savefig(f)
-			else:
-				figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
-				if not options.dist:
+	if options.fitres_filename is None:
+		plotter_choice,options.base_name,options.CID=plot_cmd(options.version,options.CID,options.nml_filename,options.dist)
+		options.CID=options.CID.split(',')
+		filename=options.version+'.pdf'
+		num=0
+		if os.path.exists(filename):
+			filename=os.path.splitext(filename)[0]+'_'+str(num)+'.pdf'
+		while os.path.exists(filename):
+			num+=1
+			filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
+		fitres={}
+		with PdfPages(filename) as pdf:
+			for cid in options.CID:
+				if not options.silent:
+					print("Plotting SN %s"%cid)
+				if options.spec:
+					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 					for f in figs:
 						pdf.savefig(f)
-				figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
-				if not options.dist or len(fits)==0:
+				elif options.lc:
+					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
 					for f in figs:
 						pdf.savefig(f)
-				
-			if len(fits)>0:
-				fitres[cid]=fits['params']
-		if options.dist and len(fitres)>0:
+				else:
+					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
+					if not options.dist:
+						for f in figs:
+							pdf.savefig(f)
+					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
+					if not options.dist or len(fits)==0:
+						for f in figs:
+							pdf.savefig(f)
+					
+				if len(fits)>0:
+					fitres[cid]=fits['params']
+			if options.dist and len(fitres)>0:
+				files=find_files(options.version,options.CID)
+				figs=create_dists(fitres,files)
+				for f in figs:
+					pdf.savefig(f)
+		if options.res_out:
+			output_fit_res(fitres,filename)
+		if not options.noclean:
+			for x in glob.glob(options.base_name+'*'):
+				os.remove(x)
+	else:
+		filename=options.version+'.pdf'
+		num=0
+		if os.path.exists(filename):
+			filename=os.path.splitext(filename)[0]+'_'+str(num)+'.pdf'
+		while os.path.exists(filename):
+			num+=1
+			filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
+		with PdfPages(filename) as pdf:
 			files=find_files(options.version,options.CID)
+			fitres=read_fitres(options.fitres_filename)
 			figs=create_dists(fitres,files)
 			for f in figs:
 				pdf.savefig(f)
-	if options.res_out:
-		output_fit_res(fitres,filename)
-	if not options.noclean:
-		for x in glob.glob(options.base_name+'*'):
-			os.remove(x)
 	if not options.silent:
 		print('Done.')
 
