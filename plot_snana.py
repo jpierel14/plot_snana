@@ -107,14 +107,14 @@ def read_lc(cid,base_name,plotter_choice):
 def read_fitres(fitres_filename):
 	fit={}
 	with open(fitres_filename,'rb') as f:
-			dat=f.readlines()
-		for line in dat:
-			temp=line.split()
-			if len(temp)>0 and b'VARNAMES:' in temp:
-				varnames=[str(x.decode('utf-8')) for x in temp]
-			elif len(temp)>0 and b'SN:' in temp and str(temp[varnames.index('CID')].decode('utf-8')) in cid: 
-				fit['params']={p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}
-				break
+		dat=f.readlines()
+	for line in dat:
+		temp=line.split()
+		if len(temp)>0 and b'VARNAMES:' in temp:
+			varnames=[str(x.decode('utf-8')) for x in temp]
+		elif len(temp)>0 and b'SN:' in temp and str(temp[varnames.index('CID')].decode('utf-8')) in cid: 
+			fit['params']={p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}
+			break
 	
 	return(fit)
 
