@@ -104,7 +104,7 @@ def read_lc(cid,base_name,plotter_choice):
 		fits=[]
 	return(sn,fits,peak)
 
-def read_fitres(fitres_filename):
+def read_fitres(fitres_filename,param):
 	fit={}
 	with open(fitres_filename,'rb') as f:
 		dat=f.readlines()
@@ -113,8 +113,12 @@ def read_fitres(fitres_filename):
 		if len(temp)>0 and b'VARNAMES:' in temp:
 			varnames=[str(x.decode('utf-8')) for x in temp]
 		elif len(temp)>0 and b'SN:' in temp: 
-			fit[str(temp[varnames.index('CID')].decode('utf-8'))]={'params':{p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}}
-			break
+			fit[str(temp[varnames.index('CID')].decode('utf-8'))]={p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}
+			if param is not None:
+				if param not in varnames:
+					raise RuntimeError("Parameter %s given for joint distribution but not found in FITRES file %s"%(param,fitres_filename))
+				fit[str(temp[varnames.index('CID')].decode('utf-8'))][param]=float(temp[varnames.index(param)])
+			
 	
 	return(fit)
 
@@ -351,40 +355,29 @@ def output_fit_res(fitres,filename):
 												fitres[cid]['c'][0],
 												fitres[cid]['c'][1]))
 
-def create_dists(fitres,files):
+def create_dists(fitres,param):
 
 	res={p:[] for p in ['x0','x1','c']}
-	res['byosed'] = []
-	param=None
+	if param is not None:
+		res[param] = []
 	for cid in fitres.keys():
-		with open(files[cid],'rb') as f:
-			all_dat=f.readlines()
-		for line in all_dat:
-			temp=line.split()
-			if len(temp)>0 and b'BYOSED_NPAR:' in temp and int(temp[1].decode('utf-8'))!=1:
-				break
-			elif len(temp)>0 and b'BYOSED_PARAM' in temp[0]:
-				if param is None:
-					param = temp[0].decode('utf-8')
-					param=param[param.find('(')+1:param.find(')')]
-				res['byosed'].append(float(temp[1].decode('utf-8')))
-				
 		for p in ['x0','x1','c']:
 			try:
 				res[p].append(fitres[cid][p][0])
 
 			except RuntimeError:
 				print("Skipping %s for distributions..."%cid)
-
+		if param is not None:
+			res[param].append(fitres[cid][param])
 	figs=[]
 	for p in ['x0','x1','c']:
 		
 		if param is not None:
 			mean_valx=np.mean(res[p])
-			mean_valy=np.mean(res['byosed'])
+			mean_valy=np.mean(res[param])
 			std_valx=np.std(res[p])
-			std_valy=np.std(res['byosed'])
-			ax = sns.jointplot(x=res[p], y=res['byosed'], kind='kde')
+			std_valy=np.std(res[param])
+			ax = sns.jointplot(x=res[p], y=res[param], kind='kde')
 			fig=plt.gcf()
 			fig.set_size_inches(10, 8)
 			ax.ax_marg_x.set_xlim(mean_valx-3*std_valx, mean_valx+3*std_valx)
@@ -407,7 +400,7 @@ def find_files(version,cid_list):
 		for dirname in dirnames:
 			
 			if dirname == version:
-				list_files={os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0'):os.path.join(dirpath,dirname,x) for x in np.loadtxt(os.path.join(dirpath,os.path.join(dirname,version+'.LIST')),dtype=str) if os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') in cid_list}
+				list_files={os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0'):os.path.join(dirpath,dirname,x) for x in np.loadtxt(os.path.join(dirpath,os.path.join(dirname,version+'.LIST')),dtype=str) if os.path.splitext(x)[0][os.path.splitext(x)[0].rfind('_SN')+3:].lstrip('0') in cid_list or len(cid_list)==0}
 								
 				
 				return(list_files)
@@ -424,6 +417,7 @@ def main():
 	parser.add_option("-v",help='Version',action="store",type='string',dest='version',default=None)
 	parser.add_option("-f",help='.NML filename',action="store",type='string',dest='nml_filename',default=None)
 	parser.add_option("-F",help='fitres filename, used to create distributions of SALT2 fitting parameters.',action="store",type='string',dest='fitres_filename',default=None)
+	parser.add_option("-p",help='Name of parameter to view in joint distribution with SALT2 fitting parameters',action="store",type='string',dest='joint_param',default=None)
 	parser.add_option("--silent",help="Do not print anything",action="store_true",dest="silent",default=False)
 	parser.add_option("--nogrid",help="Do add a grid to the plots.",action="store_true",dest="noGrid",default=False)
 	parser.add_option("--fitres",help="Output a file containing fit results.",action="store_true",dest="res_out",default=False)
@@ -435,17 +429,23 @@ def main():
 		parser.print_help(sys.stderr)
 		sys.exit()
 	if options.version is None:
-		raise RuntimeError("Need to define genversion")
+		if options.fitres_filename is None:
+			raise RuntimeError("Need to define genversion")
 	if options.CID=="None":
-		if options.dist:
-			print("No CID given, assuming all...")
+		if options.dist or options.fitres_filename is not None:
+			print("No CID given, assuming all for distributions, then first 5 for LC/SPEC plotting...")
 		else:
 			print("No CID given, assuming first 5...")
 		options.CID=None
+		all_cid=True
 	elif '-' in options.CID:
 		options.CID = ','.join([str(i) for i in range(int(options.CID[:options.CID.find('-')]),
 													int(options.CID[options.CID.find('-')+1:])+1)])
-
+		all_cid=True
+	else:
+		al_cid=False
+	if options.dist is not None and options.nml_filename is None:
+		raise RuntimeError("If you use the 'dist' option, you must provide an NML filename with the -f flag.")
 	
 	if options.fitres_filename is None:
 		plotter_choice,options.base_name,options.CID=plot_cmd(options.version,options.CID,options.nml_filename,options.dist)
@@ -457,53 +457,53 @@ def main():
 		while os.path.exists(filename):
 			num+=1
 			filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
-		fitres={}
-		with PdfPages(filename) as pdf:
-			for cid in options.CID:
-				if not options.silent:
-					print("Plotting SN %s"%cid)
-				if options.spec:
-					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
-					for f in figs:
-						pdf.savefig(f)
-				elif options.lc:
-					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
-					for f in figs:
-						pdf.savefig(f)
-				else:
-					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
-					if not options.dist:
+		if options.dist:
+			fitres=read_fitres(options.base_name+'.FITRES.TEXT',options.joint_param)
+			figs=create_dists(fitres,options.joint_param)
+		else:
+			figs=[]
+		if True:
+			if all_cid:
+				options.CID=options.CID[:5]
+			with PdfPages(filename) as pdf:
+				for f in figs:
+					pdf.savefig(f)
+				for cid in options.CID:
+					if not options.silent:
+						print("Plotting SN %s"%cid)
+					if options.spec:
+						figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 						for f in figs:
 							pdf.savefig(f)
-					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
-					if not options.dist or len(fits)==0:
+					elif options.lc:
+						figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
+						for f in figs:
+							pdf.savefig(f)
+					else:
+						figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
+						for f in figs:
+							pdf.savefig(f)
+						figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
 						for f in figs:
 							pdf.savefig(f)
 					
-				if len(fits)>0:
-					fitres[cid]=fits['params']
-			if options.dist and len(fitres)>0:
-				files,cid=find_files(options.version,options.CID)
-				figs=create_dists(fitres,files)
-				for f in figs:
-					pdf.savefig(f)
 		if options.res_out:
 			output_fit_res(fitres,filename)
 		if not options.noclean:
 			for x in glob.glob(options.base_name+'*'):
 				os.remove(x)
 	else:
-		filename=options.version+'.pdf'
+		print("Creating distributions from FITRES file...")
+		filename=options.version+'.pdf' if options.version is not None else os.path.splitext(options.fitres_filename)[0]+'.pdf'
 		num=0
 		if os.path.exists(filename):
 			filename=os.path.splitext(filename)[0]+'_'+str(num)+'.pdf'
 		while os.path.exists(filename):
 			num+=1
 			filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
+		fitres=read_fitres(options.fitres_filename,options.joint_param)
+		figs=create_dists(fitres,options.joint_param)
 		with PdfPages(filename) as pdf:
-			files=find_files(options.version,options.CID)
-			fitres=read_fitres(options.fitres_filename)
-			figs=create_dists(fitres,files)
 			for f in figs:
 				pdf.savefig(f)
 	if not options.silent:
