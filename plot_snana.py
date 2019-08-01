@@ -112,7 +112,7 @@ def read_fitres(fitres_filename):
 		temp=line.split()
 		if len(temp)>0 and b'VARNAMES:' in temp:
 			varnames=[str(x.decode('utf-8')) for x in temp]
-		elif len(temp)>0 and b'SN:' in temp and str(temp[varnames.index('CID')].decode('utf-8')) in cid: 
+		elif len(temp)>0 and b'SN:' in temp: 
 			fit['params']={p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}
 			break
 	
@@ -402,6 +402,7 @@ def create_dists(fitres,files):
 
 
 def find_files(version,cid_list):
+	cid_list=[] if cid_list is None else cid_list
 	for dirpath,dirnames,filenames in os.walk(os.environ["SNDATA_ROOT"]):
 		for dirname in dirnames:
 			
@@ -440,7 +441,7 @@ def main():
 			print("No CID given, assuming all...")
 		else:
 			print("No CID given, assuming first 5...")
-
+		options.CID=None
 	elif '-' in options.CID:
 		options.CID = ','.join([str(i) for i in range(int(options.CID[:options.CID.find('-')]),
 													int(options.CID[options.CID.find('-')+1:])+1)])
@@ -482,7 +483,7 @@ def main():
 				if len(fits)>0:
 					fitres[cid]=fits['params']
 			if options.dist and len(fitres)>0:
-				files=find_files(options.version,options.CID)
+				files,cid=find_files(options.version,options.CID)
 				figs=create_dists(fitres,files)
 				for f in figs:
 					pdf.savefig(f)
