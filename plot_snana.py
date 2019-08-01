@@ -113,7 +113,7 @@ def read_fitres(fitres_filename):
 		if len(temp)>0 and b'VARNAMES:' in temp:
 			varnames=[str(x.decode('utf-8')) for x in temp]
 		elif len(temp)>0 and b'SN:' in temp: 
-			fit['params']={p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}
+			fit[str(temp[varnames.index('CID')].decode('utf-8'))]={'params':{p:(float(temp[varnames.index(p)]),float(temp[varnames.index(p+'ERR')])) if p in ['x0','x1','c'] else float(temp[varnames.index(p)]) for p in ['x0','x1','c','NDOF','FITCHI2']}}
 			break
 	
 	return(fit)
