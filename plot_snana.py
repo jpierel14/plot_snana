@@ -355,16 +355,17 @@ def output_fit_res(fitres,filename):
 												fitres[cid]['c'][0],
 												fitres[cid]['c'][1]))
 
-def create_dists(fitres,param):
+def create_dists(fitres,param,joint_type):
 
 	res={p:[] for p in ['x0','x1','c']}
+	reserr={p:[] for p in ['x0','x1','c']}
 	if param is not None:
 		res[param] = []
 	for cid in fitres.keys():
 		for p in ['x0','x1','c']:
 			try:
 				res[p].append(fitres[cid][p][0])
-
+				reserr[p].append(fitres[cid][p][1])
 			except RuntimeError:
 				print("Skipping %s for distributions..."%cid)
 		if param is not None:
@@ -377,11 +378,13 @@ def create_dists(fitres,param):
 			mean_valy=np.mean(res[param])
 			std_valx=np.std(res[p])
 			std_valy=np.std(res[param])
-			ax = sns.jointplot(x=res[p], y=res[param], kind='kde')
+			ax = sns.jointplot(x=res[p], y=res[param], kind=joint_type)
 			fig=plt.gcf()
+			plt.errorbar(res[p],res[param],xerr=reserr[p],fmt='.',markersize=5)
 			fig.set_size_inches(10, 8)
-			ax.ax_marg_x.set_xlim(mean_valx-3*std_valx, mean_valx+3*std_valx)
-			ax.ax_marg_y.set_ylim(mean_valy-3*std_valy, mean_valy+3*std_valy)
+			if joint_type=='kde':
+				ax.ax_marg_x.set_xlim(mean_valx-3*std_valx, mean_valx+3*std_valx)
+				ax.ax_marg_y.set_ylim(mean_valy-3*std_valy, mean_valy+3*std_valy)
 			ax.set_axis_labels("%s Parameter"%p,"Simulated %s"%(' '.join([x[0]+x[1:].lower() for x in param.split('_')])),fontsize=16)
 			
 		else:
@@ -423,7 +426,8 @@ def main():
 				action="store",type='string',dest='fitres_filename',default=None)
 	parser.add_option("-p",help='Distributions: Name of parameter to view in joint distribution with SALT2 fitting parameters',
 				action="store",type='string',dest='joint_param',default=None)
-	parser.add_option("--dist",help="Distributions: Fit and then plot the distributions of fitting parameters.",action="store_true",dest="dist",default=False)
+	parser.add_option("-k",help='Distributions: Joint plot type (scatter,reg,resid,kde,hex)',action="store",type='string',dest='joint_type',default='kde')
+	parser.add_option("--dist",help="Distributions: Fit and then plot the distributions of fitting parameters.",action="store_true",dest="dist",default=False)	
 
 	parser.add_option("-i",help='All: CID(s) as comma separated list or range (1-10)',action="store",type="string",dest="CID",default="None")
 	parser.add_option("-v",help='All: Version',action="store",type='string',dest='version',default=None)
@@ -454,9 +458,12 @@ def main():
 		all_cid=True
 	else:
 		al_cid=False
-	if options.dist is not None and options.nml_filename is None:
+	if options.dist and options.nml_filename is None:
 		raise RuntimeError("If you use the 'dist' option, you must provide an NML filename with the -f flag.")
 	
+	if options.joint_type not in ['scatter','reg','resid','kde','hex']:
+		print("Joint plot type not recognized (see help), setting to kde")
+		options.joint_type='kde'
 	if options.fitres_filename is None:
 		plotter_choice,options.base_name,options.CID=plot_cmd(options.version,options.CID,options.nml_filename,options.dist)
 		options.CID=options.CID.split(',')
@@ -469,7 +476,7 @@ def main():
 			filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
 		if options.dist:
 			fitres=read_fitres(options.base_name+'.FITRES.TEXT',options.joint_param)
-			figs=create_dists(fitres,options.joint_param)
+			figs=create_dists(fitres,options.joint_param,options.joint_type)
 		else:
 			figs=[]
 		if True:
@@ -512,7 +519,7 @@ def main():
 			num+=1
 			filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
 		fitres=read_fitres(options.fitres_filename,options.joint_param)
-		figs=create_dists(fitres,options.joint_param)
+		figs=create_dists(fitres,options.joint_param,options.joint_type)
 		with PdfPages(filename) as pdf:
 			for f in figs:
 				pdf.savefig(f)
