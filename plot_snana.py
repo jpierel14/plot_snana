@@ -380,7 +380,8 @@ def create_dists(fitres,param,joint_type):
 			std_valy=np.std(res[param])
 			ax = sns.jointplot(x=res[p], y=res[param], kind=joint_type)
 			fig=plt.gcf()
-			plt.errorbar(res[p],res[param],xerr=reserr[p],fmt='.',markersize=5)
+			if joint_type in ['reg','scatter']:
+				plt.errorbar(res[p],res[param],xerr=reserr[p],fmt='.',markersize=5)
 			fig.set_size_inches(10, 8)
 			if joint_type=='kde':
 				ax.ax_marg_x.set_xlim(mean_valx-3*std_valx, mean_valx+3*std_valx)
