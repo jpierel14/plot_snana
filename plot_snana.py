@@ -328,9 +328,10 @@ def plot_cmd(genversion,cid_list,nml,isdist):
 	if len(glob.glob('OUT_TEMP_'+rand+'*.TEXT'))==0:
 		print("There was an error in retrieving your SN")
 		sys.exit()
-	with open("OUT_TEMP_"+rand+".FITRES.TEXT",'rb') as f:
-		all_dat=f.readlines()
+
 	if cid_list is None:
+		with open("OUT_TEMP_"+rand+".FITRES.TEXT",'rb') as f:
+			all_dat=f.readlines()
 		all_cids=[]
 		for line in all_dat:
 			temp=line.split()
