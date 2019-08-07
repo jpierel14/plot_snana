@@ -459,7 +459,7 @@ def main():
 													int(options.CID[options.CID.find('-')+1:])+1)])
 		all_cid=True
 	else:
-		al_cid=False
+		all_cid=False
 	if options.dist and options.nml_filename is None:
 		raise RuntimeError("If you use the 'dist' option, you must provide an NML filename with the -f flag.")
 	
@@ -481,30 +481,29 @@ def main():
 			figs=create_dists(fitres,options.joint_param,options.joint_type)
 		else:
 			figs=[]
-		if True:
-			if all_cid:
-				options.CID=options.CID[:5]
-			with PdfPages(filename) as pdf:
-				for f in figs:
-					pdf.savefig(f)
-				for cid in options.CID:
-					if not options.silent:
-						print("Plotting SN %s"%cid)
-					if options.spec:
-						figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
-						for f in figs:
-							pdf.savefig(f)
-					elif options.lc:
-						figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
-						for f in figs:
-							pdf.savefig(f)
-					else:
-						figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
-						for f in figs:
-							pdf.savefig(f)
-						figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
-						for f in figs:
-							pdf.savefig(f)
+		if all_cid:
+			options.CID=options.CID[:5]
+		with PdfPages(filename) as pdf:
+			for f in figs:
+				pdf.savefig(f)
+			for cid in options.CID:
+				if not options.silent:
+					print("Plotting SN %s"%cid)
+				if options.spec:
+					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
+					for f in figs:
+						pdf.savefig(f)
+				elif options.lc:
+					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
+					for f in figs:
+						pdf.savefig(f)
+				else:
+					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
+					for f in figs:
+						pdf.savefig(f)
+					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice)
+					for f in figs:
+						pdf.savefig(f)
 					
 		if options.res_out:
 			output_fit_res(fitres,filename)
