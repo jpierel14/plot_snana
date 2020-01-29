@@ -15,8 +15,8 @@ from scipy.interpolate import interp1d
 import seaborn as sns
 
 
-__band_order__=np.append(['u','b','g','r','i','z','y','j','h','k'],
-	 [x.upper() for x in ['u','b','g','r','i','z','y','j','h','k']])
+__band_order__=np.append(['u','b','g','v','r','i','z','y','j','h','k'],
+	 [x.upper() for x in ['u','b','g','v','r','i','z','y','j','h','k']])
 
 def read_spec(cid,base_name):
 	names=['wave','flux','fluxerr','tobs','mjd']
@@ -247,7 +247,9 @@ def plot_lc(cid,base_name,noGrid,plotter_choice,tmin,tmax,filter_list,plot_all):
 		maxx=max(maxx*.9,maxx+5)
 	else:
 		maxx=max(maxx*1.1,maxx+5)
+	
 	xlims=(minx,maxx)
+	
 	sharedx=True
 	for nfig in range(int(math.ceil(rows/4.))): 
 		fig,ax=plt.subplots(nrows=min(len(all_bands),4),ncols=1,figsize=(8,8),sharex=sharedx)
@@ -267,10 +269,13 @@ def plot_lc(cid,base_name,noGrid,plotter_choice,tmin,tmax,filter_list,plot_all):
 						  fmt='.',markersize=8,color='k',
 						  label=lab)
 			if len(fits)>0:
+				
 				if not plot_all:
 					fit_time=np.arange(temp_sn['time'][0],temp_sn['time'][-1],1)
 				else:
 					fit_time=np.arange(fits['trange'][all_bands[j]][0],fits['trange'][all_bands[j]][1],1)
+				
+				fit_time=fit_time[np.where(np.logical_and(fit_time>=minx,fit_time<=maxx))[0]]
 				ax[i].plot(fit_time,fits[all_bands[j]](fit_time),color='r',label='Best Fit',linewidth=3)
 
 				if not fit_print:
@@ -287,6 +292,7 @@ def plot_lc(cid,base_name,noGrid,plotter_choice,tmin,tmax,filter_list,plot_all):
 				fit_print=True
 			ax[i].legend(fontsize=leg_size)
 			ax[i].set_ylabel('Flux',fontsize=16)
+			
 			if len(fits)>0:
 				try:
 					maxFlux=max(np.max(temp_sn['flux']),np.max(fits[all_bands[j]](fit_time)))
@@ -294,6 +300,7 @@ def plot_lc(cid,base_name,noGrid,plotter_choice,tmin,tmax,filter_list,plot_all):
 					maxFlux=np.max(temp_sn['flux'])	
 			else:
 				maxFlux=np.max(temp_sn['flux'])
+			
 			ax[i].set_ylim((-.1*np.max(temp_sn['flux']),1.1*maxFlux))
 			if not noGrid:
 				ax[i].grid()
