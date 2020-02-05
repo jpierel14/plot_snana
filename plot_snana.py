@@ -484,7 +484,7 @@ def main():
 	parser.add_option("-p",help='All: Private Data Path',action="store",type='string',dest='private_path',default=None)
 	parser.add_option("--noclean",help='All: Leave intermediate files for debugging',action="store_true",dest="noclean",default=False)
 	parser.add_option("--silent",help="All: Do not print anything",action="store_true",dest="silent",default=False)
-	
+	parser.add_option("--singlePage",help="All: Save figures to multiple files instead of pages",action="store_true",dest="silent",default=False)
 	
 	
 	#parser.add_option("--help",action="store_true",dest='help',default=False)
@@ -534,27 +534,52 @@ def main():
 			figs=[]
 		if all_cid:
 			options.CID=options.CID[:5]
-		with PdfPages(filename) as pdf:
+		if not options.singlePage:
+			pdf=PdfPages(filename)
+		else:
+			pdf=None
+			
+		if True:
 			for f in figs:
-				pdf.savefig(f)
+				if pdf is not None:
+					pdf.savefig(f)
+				else:
+					f.savefig(filename[:-5]+str(num)+'.pdf',format='pdf',overwrite=True)
+					num+=1
 			for cid in options.CID:
 				if not options.silent:
 					print("Plotting SN %s"%cid)
 				if options.spec:
 					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 					for f in figs:
-						pdf.savefig(f)
+						if pdf is not None:
+							pdf.savefig(f)
+						else:
+							f.savefig(filename[:-5]+str(num)+'.pdf',format='pdf',overwrite=True)
+							num+=1
 				elif options.lc:
 					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice,options.tmin,options.tmax,options.filt_list,options.plot_all)
 					for f in figs:
-						pdf.savefig(f)
+						if pdf is not None:
+							pdf.savefig(f)
+						else:
+							f.savefig(filename[:-5]+str(num)+'.pdf',format='pdf',overwrite=True)
+							num+=1
 				else:
 					figs=plot_spec([cid],options.bin_size,options.base_name,options.noGrid)
 					for f in figs:
-						pdf.savefig(f)
+						if pdf is not None:
+							pdf.savefig(f)
+						else:
+							f.savefig(filename[:-5]+str(num)+'.pdf',format='pdf',overwrite=True)
+							num+=1
 					figs,fits=plot_lc([cid],options.base_name,options.noGrid,plotter_choice,options.tmin,options.tmax,options.filt_list,options.plot_all)
 					for f in figs:
-						pdf.savefig(f)
+						if pdf is not None:
+							pdf.savefig(f)
+						else:
+							f.savefig(filename[:-5]+str(num)+'.pdf',format='pdf',overwrite=True)
+							num+=1
 					
 		if options.res_out:
 			output_fit_res(fitres,filename)
@@ -572,9 +597,16 @@ def main():
 			filename=os.path.splitext(filename)[0][:-1]+str(num)+'.pdf'
 		fitres=read_fitres(options.fitres_filename,options.joint_param)
 		figs=create_dists(fitres,options.joint_param,options.joint_type)
-		with PdfPages(filename) as pdf:
+		if not options.singlePage:
+			pdf=PdfPages(filename)
 			for f in figs:
-				pdf.savefig(f)
+				if pdf is not None:
+					pdf.savefig(f)
+				else:
+					f.savefig(filename[:-5]+str(num)+'.pdf',format='pdf',overwrite=True)
+                    num+=1
+	if pdf is not None:
+		pdf.close()
 	if not options.silent:
 		print('Done.')
 
