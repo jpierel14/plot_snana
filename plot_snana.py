@@ -604,7 +604,7 @@ def main():
 					pdf.savefig(f)
 				else:
 					f.savefig(filename[:-5]+str(num)+'.pdf',format='pdf',overwrite=True)
-                    num+=1
+					num+=1
 	if pdf is not None:
 		pdf.close()
 	if not options.silent:
